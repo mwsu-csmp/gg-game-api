@@ -179,8 +179,7 @@ public class Board implements EventProducer {
 	public int getWidth() {
 		return tiles.keySet().stream()
 				.mapToInt(Pair::_1)
-				//add 2 to start count at 1 and add offset for newline character
-				.max().getAsInt() + 2;
+				.max().getAsInt() + 1;
 	}
 
 	public int getHeight() {
