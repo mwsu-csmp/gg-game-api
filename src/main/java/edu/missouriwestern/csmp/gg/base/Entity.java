@@ -19,10 +19,11 @@ public abstract class Entity implements HasProperties {
 	 * @param game associated Game
 	 */
 	public Entity(Game game, Map<String,String> properties) {
+
 		this.game = game;
-		this.id = game.getEntityId(this);
 		this.properties = new ConcurrentHashMap<>(properties);
 		game.addEntity(this);
+		this.id = game.getEntityId(this);
 	}
 
 	public Entity(Game game, Map<String,String> properties, Container initialLocation) {
