@@ -43,7 +43,7 @@ public class InMemoryDataStore implements DataStore {
         assert players.containsKey(player.getID());
 
         var properties = players.get(player);
-        for(var key : properties.keySet())
+        if(properties != null) for(var key : properties.keySet())
             player.setProperty(key, properties.get(key));
     }
 
@@ -51,7 +51,7 @@ public class InMemoryDataStore implements DataStore {
         assert entities.containsKey(entity.getID());
 
         var properties = entities.get(entity);
-        for(var key : properties.keySet())
+        if(properties != null) for(var key : properties.keySet())
             entity.setProperty(key, properties.get(key));
     }
 
@@ -67,6 +67,6 @@ public class InMemoryDataStore implements DataStore {
     }
 
     public int getMaxEntityId() {
-        return entities.keySet().stream().mapToInt(x->x.intValue()).max().getAsInt();
+        return entities.keySet().stream().mapToInt(x->x.intValue()).max().orElseGet(()->1);
     }
 }
