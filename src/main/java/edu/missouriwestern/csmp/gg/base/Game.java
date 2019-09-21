@@ -6,7 +6,6 @@ import edu.missouriwestern.csmp.gg.base.events.EntityCreationEvent;
 import edu.missouriwestern.csmp.gg.base.events.EntityDeletionEvent;
 import edu.missouriwestern.csmp.gg.base.events.EntityMovedEvent;
 
-import javax.xml.crypto.Data;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,7 +13,7 @@ import java.util.stream.Stream;
 
 /** Class for managing the state of games using the 2D API
  */
-public abstract class Game implements Container, EventProducer {
+public abstract class Game implements Container {
 
 	private final Map<String,Board> boards = new ConcurrentHashMap<>();
 	private final long startTime;    // time when game was started or restarted
@@ -26,7 +25,7 @@ public abstract class Game implements Container, EventProducer {
 
 	// no concurrent set, so only keys used to mimic set
 	final BiMap<Integer, Entity> registeredEntities;
-	private final BiMap<String, Player> allPlayers;
+	private final BiMap<String, Agent> allPlayers;
 
 	// access must be protected by monitor
 	private final Multimap<Container, Entity> containerContents;
@@ -75,13 +74,11 @@ public abstract class Game implements Container, EventProducer {
 	}
 
 	/** begins forwarding all game events to specified listener */
-	@Override
 	public void registerListener(EventListener listener) {
 		listeners.put(listener, "thing");
 	}
 
 	/** stops forwarding all game events to specified listener */
-	@Override
 	public void deregisterListener(EventListener listener) {
 		listeners.put(listener, "thing");
 	}
@@ -90,7 +87,6 @@ public abstract class Game implements Container, EventProducer {
 	 * All listeners registered via registerListener
 	 * @return
 	 */
-	@Override
 	public Stream<EventListener> getListeners() {
 		return listeners.keySet().stream();
 	}
@@ -98,7 +94,7 @@ public abstract class Game implements Container, EventProducer {
 	/** add a player to the game
 	 * @param player player to be added to the game
 	 */
-	public void addPlayer(Player player) {
+	public void addPlayer(Agent player) {
 		allPlayers.put(player.getID(), player);
 		getDataStore().load(player);
 	}
@@ -107,7 +103,7 @@ public abstract class Game implements Container, EventProducer {
 	 *
 	 * @param player player to be removed from the game
 	 */
-	public void removePlayer(Player player) {
+	public void removePlayer(Agent player) {
 		allPlayers.remove(player.getID());
 	}
 	public void removePlayer(String playerId) {
@@ -119,7 +115,7 @@ public abstract class Game implements Container, EventProducer {
 	 * @param id ID of player to be found
 	 * @return player object with associated ID
 	 */
-	public Player getPlayer(String id) {
+	public Agent getPlayer(String id) {
 		return allPlayers.get(id);
 	}
 
@@ -161,10 +157,10 @@ public abstract class Game implements Container, EventProducer {
 		return allPlayers.size();
 	}
 	/**
-	 * Returns the set of all {@link Player}s
+	 * Returns the set of all {@link Agent}s
 	 * @return connected Players
 	 */
-	public Stream<Player> getAllPlayers() {
+	public Stream<Agent> getAllPlayers() {
 		return allPlayers.values().stream();
 	}
 
@@ -317,4 +313,10 @@ public abstract class Game implements Container, EventProducer {
 		return gson.toJson(m);
 	}
 
+	public void accept(Event event) {
+		propagateEvent(event);
+	}
+	public void propagateEvent(Event event) {
+		getListeners().forEach(listener -> listener.accept(event));
+	}
 }
