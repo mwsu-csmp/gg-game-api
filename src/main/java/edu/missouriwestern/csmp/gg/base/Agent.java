@@ -7,20 +7,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/** represents a player within the game
- * not an {@link Entity} as a player may potentially comprise multiple entities within the game.
- * Intended to house client connection code.
- *
- * Instanciating classes must include implementation of accept(Event) and forward
- * serialized events to clients.
+/** represents an outside agent that acts within the game
+ * not an {@link Entity} as an agent may potentially comprise multiple entities within the game.
  */
-public abstract class Player implements Container, HasProperties, EventListener {
+public abstract class Agent implements Container, HasProperties, EventListener {
 
 	private final String id;
 	private final Map<String,String> properties;
 	private final Game game;
 
-	public Player(String id, Game game, Map<String,String> properties){
+	public Agent(String id, Game game, Map<String,String> properties){
 		this.id = id;
 		this.game = game;
 		this.properties = new HashMap<>(properties);
@@ -28,7 +24,7 @@ public abstract class Player implements Container, HasProperties, EventListener 
 		game.registerListener(this);
 	}
 
-	public Player(String id, Game game){
+	public Agent(String id, Game game){
 		this(id, game, new HashMap<>());
 	}
 
