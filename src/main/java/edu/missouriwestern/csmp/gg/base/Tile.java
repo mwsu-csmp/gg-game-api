@@ -69,7 +69,7 @@ public final class Tile implements Container, HasProperties {
 	@Override
 	public void setProperty(String key, String value) {
 		properties.put(key, value);
-		board.accept(new TileStateUpdateEvent(this));
+		board.getGame().accept(new TileStateUpdateEvent(this));
 	}
 
 	/** returns a JSON representation of this tile and its properties

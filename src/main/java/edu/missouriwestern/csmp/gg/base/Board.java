@@ -12,8 +12,8 @@ import java.util.stream.Stream;
 
 /** represents a 2d grid of tiles used as a playing surface for a game
  *  */
-public class Board implements EventProducer {
-	private static Logger logger = Logger.getLogger(EventProducer.class.getCanonicalName());
+public class Board {
+	private static Logger logger = Logger.getLogger(Board.class.getCanonicalName());
 
 	private final Map<Pair<Integer>, Tile> tiles;
 	private final BiMap<Character,String> tileTypeChars;
@@ -65,21 +65,6 @@ public class Board implements EventProducer {
 		this.name = name;
 		this.tileTypeChars = HashBiMap.create(tileTypeChars);
 		this.tiles = Collections.unmodifiableMap(tiles);
-	}
-
-	@Override
-	public void registerListener(EventListener listener) {
-		listeners.put(listener, null);
-	}
-
-	@Override
-	public void deregisterListener(EventListener listener) {
-		listeners.put(listener, null);
-	}
-
-	@Override
-	public Stream<EventListener> getListeners() {
-		return listeners.keySet().stream();
 	}
 
 	/**
