@@ -25,7 +25,7 @@ public abstract class Game implements Container {
 
 	// no concurrent set, so only keys used to mimic set
 	final BiMap<Integer, Entity> registeredEntities;
-	private final BiMap<String, Agent> allPlayers;
+	private final BiMap<String, Agent> allAgents;
 
 	// access must be protected by monitor
 	private final Multimap<Container, Entity> containerContents;
@@ -36,7 +36,7 @@ public abstract class Game implements Container {
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
 		registeredEntities = Maps.synchronizedBiMap(HashBiMap.create());
-		allPlayers = Maps.synchronizedBiMap(HashBiMap.create());
+		allAgents = Maps.synchronizedBiMap(HashBiMap.create());
 		// access must be protected by monitor
 		containerContents = HashMultimap.create();
 		entityLocations = new HashMap<>();
@@ -48,7 +48,7 @@ public abstract class Game implements Container {
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
 		registeredEntities = Maps.synchronizedBiMap(HashBiMap.create());
-		allPlayers = Maps.synchronizedBiMap(HashBiMap.create());
+		allAgents = Maps.synchronizedBiMap(HashBiMap.create());
 		// access must be protected by monitor
 		containerContents = HashMultimap.create();
 		entityLocations = new HashMap<>();
@@ -91,23 +91,23 @@ public abstract class Game implements Container {
 		return listeners.keySet().stream();
 	}
 
-	/** add a player to the game
-	 * @param player player to be added to the game
+	/** add an agent to the game
+	 * @param agent agent to be added to the game
 	 */
-	public void addPlayer(Agent player) {
-		allPlayers.put(player.getID(), player);
-		getDataStore().load(player);
+	public void addAgent(Agent agent) {
+		allAgents.put(agent.getAgentID(), agent);
+		getDataStore().load(agent);
 	}
 
-	/** remove player from the game
+	/** remove agent from the game
 	 *
-	 * @param player player to be removed from the game
+	 * @param agent agent to be removed from the game
 	 */
-	public void removePlayer(Agent player) {
-		allPlayers.remove(player.getID());
+	public void removeAgent(Agent agent) {
+		allAgents.remove(agent.getAgentID());
 	}
 	public void removePlayer(String playerId) {
-		allPlayers.remove(playerId);
+		allAgents.remove(playerId);
 	}
 
 	/** find player with associated ID that has joined this game
@@ -116,7 +116,7 @@ public abstract class Game implements Container {
 	 * @return player object with associated ID
 	 */
 	public Agent getPlayer(String id) {
-		return allPlayers.get(id);
+		return allAgents.get(id);
 	}
 
 	/**
@@ -154,14 +154,14 @@ public abstract class Game implements Container {
 	 * @return the number of players in the game
 	 */
 	public int getNumPlayers() {
-		return allPlayers.size();
+		return allAgents.size();
 	}
 	/**
 	 * Returns the set of all {@link Agent}s
 	 * @return connected Players
 	 */
-	public Stream<Agent> getAllPlayers() {
-		return allPlayers.values().stream();
+	public Stream<Agent> getAllAgents() {
+		return allAgents.values().stream();
 	}
 
 	/**
@@ -316,7 +316,16 @@ public abstract class Game implements Container {
 	public void accept(Event event) {
 		propagateEvent(event);
 	}
+
 	public void propagateEvent(Event event) {
 		getListeners().forEach(listener -> listener.accept(event));
 	}
+
+	/** create an agent for the specified id/role (or retrieve existing agent)
+	 * called when a client connects to control the agent
+	 * @param id
+	 * @param role
+	 * @return
+	 */
+	public abstract Agent getAgent(String id, String role);
 }
