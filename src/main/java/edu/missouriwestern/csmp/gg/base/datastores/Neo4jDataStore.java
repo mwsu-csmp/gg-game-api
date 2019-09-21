@@ -31,7 +31,7 @@ class Neo4jDataStore implements DataStore {
 
         String type = "";
 
-        if (object instanceof Player) {
+        if (object instanceof Agent) {
             type = "Player";
         } else {
             type = "Entity";

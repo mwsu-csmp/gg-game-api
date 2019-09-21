@@ -3,7 +3,7 @@ package edu.missouriwestern.csmp.gg.base.datastores;
 import edu.missouriwestern.csmp.gg.base.DataStore;
 import edu.missouriwestern.csmp.gg.base.Entity;
 import edu.missouriwestern.csmp.gg.base.HasProperties;
-import edu.missouriwestern.csmp.gg.base.Player;
+import edu.missouriwestern.csmp.gg.base.Agent;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -15,14 +15,14 @@ public class InMemoryDataStore implements DataStore {
 
     public void save(HasProperties obj) {
         // implement multiple dispatch
-        if(obj instanceof Player) {
-            save((Player)obj);
+        if(obj instanceof Agent) {
+            save((Agent)obj);
         } else if(obj instanceof Entity) {
             save((Entity)obj);
         }
     }
 
-    private void save(Player player) {
+    private void save(Agent player) {
         players.put(player.getID(), player.getProperties());
     }
 
@@ -32,14 +32,14 @@ public class InMemoryDataStore implements DataStore {
 
     public void load(HasProperties obj) {
         // implement multiple dispatch
-        if(obj instanceof Player) {
-            load((Player)obj);
+        if(obj instanceof Agent) {
+            load((Agent)obj);
         } else if(obj instanceof Entity) {
             load((Entity)obj);
         }
     }
 
-    private void load(Player player) {
+    private void load(Agent player) {
         assert players.containsKey(player.getID());
 
         var properties = players.get(player);
