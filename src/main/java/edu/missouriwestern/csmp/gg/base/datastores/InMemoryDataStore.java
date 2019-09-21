@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryDataStore implements DataStore {
     private Map<Integer,Map<String,String>> entities = new ConcurrentHashMap<>();
-    private Map<String,Map<String,String>> players = new ConcurrentHashMap<>();
+    private Map<String,Map<String,String>> agents = new ConcurrentHashMap<>();
 
     public void save(HasProperties obj) {
         // implement multiple dispatch
@@ -22,8 +22,8 @@ public class InMemoryDataStore implements DataStore {
         }
     }
 
-    private void save(Agent player) {
-        players.put(player.getID(), player.getProperties());
+    private void save(Agent agent) {
+        agents.put(agent.getAgentID(), agent.getProperties());
     }
 
     private void save(Entity entity) {
@@ -39,12 +39,12 @@ public class InMemoryDataStore implements DataStore {
         }
     }
 
-    private void load(Agent player) {
-        assert players.containsKey(player.getID());
+    private void load(Agent agent) {
+        assert agents.containsKey(agent.getAgentID());
 
-        var properties = players.get(player);
+        var properties = agents.get(agent);
         if(properties != null) for(var key : properties.keySet())
-            player.setProperty(key, properties.get(key));
+            agent.setProperty(key, properties.get(key));
     }
 
     private void load(Entity entity) {
