@@ -44,6 +44,6 @@ public class CommandEvent extends Event {
          var element = new JsonParser().parse(json);
         var command = element.getAsJsonObject().get("command").getAsString();
         var parameter = element.getAsJsonObject().get("parameter").getAsString();
-        game.accept(new CommandEvent(game, playerId, command, parameter));
+        game.propagateEvent(new CommandEvent(game, playerId, command, parameter));
     }
 }

@@ -5,9 +5,13 @@ import com.google.common.collect.HashBiMap;
 import com.google.gson.GsonBuilder;
 import net.sourcedestination.funcles.tuple.Pair;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** represents a 2d grid of tiles used as a playing surface for a game
@@ -205,6 +209,16 @@ public class Board {
 		m.put("tilemap", getTileMap());
 		m.put("tileTypes", tileTypeChars);
 		return gson.toJson(m);
+	}
+
+	/** loads a text file resource as a string.
+	 * used to load maps from text files in spring config */
+	public static String loadMap(String mapFileName) throws IOException {
+		var mapString = new BufferedReader(new InputStreamReader(
+				Board.class.getClassLoader()
+						.getResourceAsStream(mapFileName)))
+				.lines().collect(Collectors.joining("\n"));
+		return mapString;
 	}
 }
 

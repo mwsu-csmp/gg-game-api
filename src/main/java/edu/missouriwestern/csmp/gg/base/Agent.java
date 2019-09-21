@@ -9,7 +9,7 @@ public interface Agent extends Container, HasProperties, EventListener {
 
 	/** Isues a new {@link CommandEvent} to all {@link EventListener}'s in the game. */
 	public default void issueCommand(String commandName, String parameter) {
-		getGame().accept(new CommandEvent(getGame(), getAgentID(), commandName, parameter));
+		getGame().propagateEvent(new CommandEvent(getGame(), getAgentID(), commandName, parameter));
 	}
 
 	public String getAgentID();

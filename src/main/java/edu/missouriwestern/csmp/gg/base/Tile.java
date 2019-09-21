@@ -6,7 +6,6 @@ import edu.missouriwestern.csmp.gg.base.events.TileStateUpdateEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 
 // TODO: allow / encourage Tile subclasses to help simplify xml config and add a good spot for event listeners
@@ -69,7 +68,7 @@ public final class Tile implements Container, HasProperties {
 	@Override
 	public void setProperty(String key, String value) {
 		properties.put(key, value);
-		board.getGame().accept(new TileStateUpdateEvent(this));
+		board.getGame().propagateEvent(new TileStateUpdateEvent(this));
 	}
 
 	/** returns a JSON representation of this tile and its properties

@@ -9,6 +9,7 @@ import edu.missouriwestern.csmp.gg.base.events.EntityMovedEvent;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /** Class for managing the state of games using the 2D API
@@ -22,6 +23,7 @@ public abstract class Game implements Container {
 	private final AtomicInteger nextEventID = new AtomicInteger(1);
 	private final Map<EventListener,Object> listeners = new ConcurrentHashMap<>();
 	private final DataStore dataStore;
+	private final EventListener eventPropagator;
 
 	// no concurrent set, so only keys used to mimic set
 	final BiMap<Integer, Entity> registeredEntities;
@@ -31,19 +33,9 @@ public abstract class Game implements Container {
 	private final Multimap<Container, Entity> containerContents;
 	private final Map<Entity, Container> entityLocations;
 
-	public Game() {
-		this.dataStore = null; // data store won't be used with this game
-		this.startTime = System.currentTimeMillis();
-		this.elapsedTime = 0;
-		registeredEntities = Maps.synchronizedBiMap(HashBiMap.create());
-		allAgents = Maps.synchronizedBiMap(HashBiMap.create());
-		// access must be protected by monitor
-		containerContents = HashMultimap.create();
-		entityLocations = new HashMap<>();
-		this.nextEntityID = new AtomicInteger(0);
-	}
-
-	public Game(DataStore dataStore) {
+	public Game(DataStore dataStore,
+				EventListener eventPropagator,
+				Consumer<EventListener> incomingEventCallback) {
 		this.dataStore = dataStore;
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
@@ -54,6 +46,13 @@ public abstract class Game implements Container {
 		entityLocations = new HashMap<>();
 		  // set next entity ID to be one more than the biggest one in the database
 		this.nextEntityID = new AtomicInteger(dataStore.getMaxEntityId() + 1);
+		this.eventPropagator = eventPropagator;
+		incomingEventCallback.accept(new EventListener() {
+			@Override
+			public synchronized void acceptEvent(Event event) {
+				getListeners().forEach(listener -> listener.accept(event));
+			}
+		});
 	}
 
 	@Override
@@ -205,7 +204,7 @@ public abstract class Game implements Container {
 		if(ent instanceof EventListener) {
 			registerListener((EventListener)ent);
 		}
-		accept(new EntityCreationEvent(this, ent));
+		propagateEvent(new EntityCreationEvent(this, ent));
 	}
 
 	/**
@@ -229,7 +228,7 @@ public abstract class Game implements Container {
 		}
 
 		// alert other game components to entity removal
-		accept(new EntityDeletionEvent(this, ent));
+		propagateEvent(new EntityDeletionEvent(this, ent));
 	}
 
 	/** moves the entity to a new Container.
@@ -244,17 +243,14 @@ public abstract class Game implements Container {
 
 		Container prev = getGame().getEntityLocation(ent);
 
-		synchronized (this) {
 			// move entity to new location
 			var currentLocation = getEntityLocation(ent);
-			if(currentLocation != null) {
+			if(currentLocation != null)
 				entityLocations.remove(ent);
 				containerContents.remove(currentLocation, ent);
-			}
 			entityLocations.put(ent, container);
 			containerContents.put(container, ent);
-		}
-		accept(new EntityMovedEvent(ent, prev));
+		propagateEvent(new EntityMovedEvent(ent, prev));
 	}
 
 	/** Determines whether or not a specified Container holds the specified entity */
@@ -313,12 +309,8 @@ public abstract class Game implements Container {
 		return gson.toJson(m);
 	}
 
-	public void accept(Event event) {
-		propagateEvent(event);
-	}
-
 	public void propagateEvent(Event event) {
-		getListeners().forEach(listener -> listener.accept(event));
+		eventPropagator.accept(event);
 	}
 
 	/** create an agent for the specified id/role (or retrieve existing agent)
