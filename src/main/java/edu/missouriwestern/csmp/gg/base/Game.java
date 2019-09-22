@@ -285,6 +285,14 @@ public abstract class Game implements Container {
 		} else if(prev instanceof Entity) {
 			properties.put("previous-entity-container", ((Entity)prev).getID()+"");
 		}
+		var current = getEntityLocation(ent);
+		if(current instanceof Tile) {
+			properties.put("board", ((Tile)current).getBoard().getName());
+			properties.put("row", ((Tile)current).getRow()+"");
+			properties.put("column", ((Tile)current).getColumn()+"");
+		} else if(current instanceof Entity) {
+			properties.put("entity-container", ((Entity)current).getID()+"");
+		}
 		return new Event(this, "entity-moved", properties);
 	}
 
