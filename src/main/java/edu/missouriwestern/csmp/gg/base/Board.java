@@ -59,7 +59,7 @@ public class Board {
                         properties.putAll(tileProperties.get(Pair.makePair(""+col, ""+row)));
                     if(!properties.containsKey("character"))
                     	properties.put("character", ""+c);
-                    var tile = new Tile(this, col, row, tileTypeChars.get(c), properties);
+                    var tile = game.generateTile(this, col, row, tileTypeChars.get(c), properties);
 					tiles.put(Pair.makePair(col, row), tile);
 				}
 				col++; // increment column

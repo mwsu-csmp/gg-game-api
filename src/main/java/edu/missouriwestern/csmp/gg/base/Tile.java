@@ -1,16 +1,14 @@
 package edu.missouriwestern.csmp.gg.base;
 
 import com.google.gson.GsonBuilder;
-import edu.missouriwestern.csmp.gg.base.events.TileStateUpdateEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-// TODO: allow / encourage Tile subclasses to help simplify xml config and add a good spot for event listeners
 /** Represents spaces on the {@link Board} that contain entities */
-public final class Tile implements Container, HasProperties {
+public class Tile implements Container, HasProperties {
 	public final int row;
 	public final int column;
 	private final Board board;
@@ -68,7 +66,7 @@ public final class Tile implements Container, HasProperties {
 	@Override
 	public void setProperty(String key, String value) {
 		properties.put(key, value);
-		board.getGame().propagateEvent(new TileStateUpdateEvent(this));
+		board.getGame().propagateEvent(tileStatusUpdateEvent());
 	}
 
 	/** returns a JSON representation of this tile and its properties
@@ -84,6 +82,15 @@ public final class Tile implements Container, HasProperties {
 		m.put("type", type);
 		m.put("properties", properties);
 		return gson.toJson(m);
+	}
+
+	public Event tileStatusUpdateEvent() {
+		return new Event(getGame(), "tile-status-update",
+				Map.of(
+						"board", getBoard().getName(),
+						"row", row+"",
+						"column", column+""
+				));
 	}
 
 }

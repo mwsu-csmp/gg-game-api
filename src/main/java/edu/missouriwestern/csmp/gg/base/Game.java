@@ -2,9 +2,9 @@ package edu.missouriwestern.csmp.gg.base;
 
 import com.google.common.collect.*;
 import com.google.gson.GsonBuilder;
-import edu.missouriwestern.csmp.gg.base.events.EntityCreationEvent;
-import edu.missouriwestern.csmp.gg.base.events.EntityDeletionEvent;
-import edu.missouriwestern.csmp.gg.base.events.EntityMovedEvent;
+import net.sourcedestination.funcles.function.Function3;
+import net.sourcedestination.funcles.tuple.Tuple3;
+import static net.sourcedestination.funcles.tuple.Tuple.makeTuple;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +24,7 @@ public abstract class Game implements Container {
 	private final Map<EventListener,Object> listeners = new ConcurrentHashMap<>();
 	private final DataStore dataStore;
 	private final EventListener eventPropagator;
+	private final Map<String, Function3<Board,Integer,Integer,Tile>> tileGenerators;
 
 	// no concurrent set, so only keys used to mimic set
 	final BiMap<Integer, Entity> registeredEntities;
@@ -33,9 +34,19 @@ public abstract class Game implements Container {
 	private final Multimap<Container, Entity> containerContents;
 	private final Map<Entity, Container> entityLocations;
 
+	private Map<Tuple3<Board, Integer, Integer>,Tile> initialTiles = new HashMap<>();
+
 	public Game(DataStore dataStore,
 				EventListener eventPropagator,
-				Consumer<EventListener> incomingEventCallback) {
+				Consumer<EventListener> incomingEventCallback,
+				Tile ... initialTiles) {
+		this(dataStore, eventPropagator, incomingEventCallback, new HashMap<>(), initialTiles);
+	}
+	public Game(DataStore dataStore,
+				EventListener eventPropagator,
+				Consumer<EventListener> incomingEventCallback,
+				Map<String, Function3<Board,Integer,Integer,Tile>> tileGenerators,
+				Tile ... initialTiles) {
 		this.dataStore = dataStore;
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
@@ -53,6 +64,12 @@ public abstract class Game implements Container {
 				getListeners().forEach(listener -> listener.accept(event));
 			}
 		});
+
+		this.tileGenerators = tileGenerators;
+
+		for(Tile t : initialTiles) {
+			this.initialTiles.put(makeTuple(t.getBoard(), t.getColumn(), t.getRow()), t);
+		}
 	}
 
 	@Override
@@ -114,7 +131,7 @@ public abstract class Game implements Container {
 	 * @param id ID of player to be found
 	 * @return player object with associated ID
 	 */
-	public Agent getPlayer(String id) {
+	public Agent getAgent(String id) {
 		return allAgents.get(id);
 	}
 
@@ -204,7 +221,10 @@ public abstract class Game implements Container {
 		if(ent instanceof EventListener) {
 			registerListener((EventListener)ent);
 		}
-		propagateEvent(new EntityCreationEvent(this, ent));
+		propagateEvent(new Event(this, "entity-creation",
+				Map.of(
+						"entity-id", ent.getID()+""
+				)));
 	}
 
 	/**
@@ -228,7 +248,10 @@ public abstract class Game implements Container {
 		}
 
 		// alert other game components to entity removal
-		propagateEvent(new EntityDeletionEvent(this, ent));
+		propagateEvent(new Event(this, "entity-deletion",
+				Map.of(
+						"entity-id", ent.getID()+""
+				)));
 	}
 
 	/** moves the entity to a new Container.
@@ -250,7 +273,19 @@ public abstract class Game implements Container {
 				containerContents.remove(currentLocation, ent);
 			entityLocations.put(ent, container);
 			containerContents.put(container, ent);
-		propagateEvent(new EntityMovedEvent(ent, prev));
+		propagateEvent(entityMovedEvent(ent, prev));
+	}
+
+	public Event entityMovedEvent(Entity ent, Container prev) {
+		var properties = new HashMap<String,String>();
+		if(prev instanceof Tile) {
+			properties.put("previous-board", ((Tile)prev).getBoard().getName());
+			properties.put("previous-row", ((Tile)prev).getRow()+"");
+			properties.put("previous-column", ((Tile)prev).getColumn()+"");
+		} else if(prev instanceof Entity) {
+			properties.put("previous-entity-container", ((Entity)prev).getID()+"");
+		}
+		return new Event(this, "entity-moved", properties);
 	}
 
 	/** Determines whether or not a specified Container holds the specified entity */
@@ -311,6 +346,14 @@ public abstract class Game implements Container {
 
 	public void propagateEvent(Event event) {
 		eventPropagator.accept(event);
+	}
+
+	public Tile generateTile(Board board, int column, int row, String type, Map<String,String> properties) {
+		if(initialTiles.containsKey(makeTuple(board, column, row)))
+			return initialTiles.get(makeTuple(board, column, row));
+		if(tileGenerators.containsKey(type))
+			return tileGenerators.get(type).apply(board, column, row);
+		return new Tile(board, column, row, type, properties);
 	}
 
 	/** create an agent for the specified id/role (or retrieve existing agent)
