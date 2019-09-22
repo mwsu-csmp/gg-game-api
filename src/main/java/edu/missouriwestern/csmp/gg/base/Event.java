@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 // TODO: create annotation indicating required and optional properties
@@ -18,24 +19,24 @@ public class Event implements HasProperties {
     private final int id;
     private final Game game;
     private final long eventTime;
+    private final String type;
 
-    public Event(Game game) {
-        this(game, game.getNextEventId(), new HashMap<>());
+    public Event(Game game, String type) {
+        this(game, type, game.getNextEventId(), new HashMap<>());
     }
 
-    // TODO: eliminate this
-    public Event(Game game, int id) {
-        this(game, id, new HashMap<>());
+    private Event(Game game, String type, int id) {
+        this(game, type, id, new HashMap<>());
     }
 
-    public Event(Game game, Map<String,String> properties) {
-        this(game, game.getNextEventId(), properties);
+    public Event(Game game, String type, Map<String,String> properties) {
+        this(game, type, game.getNextEventId(), properties);
     }
 
-    // TODO: get rid of id param
-    public Event(Game game, int id, Map<String,String> properties) {
+    private Event(Game game, String type, int id, Map<String,String> properties) {
         this.id = id;
         this.game = game;
+        this.type = type;
         this.eventTime = game.getGameTime();
         properties = new HashMap<>(properties); // add id to properties
         properties.put("id", ""+id);
@@ -61,14 +62,49 @@ public class Event implements HasProperties {
         return game;
     }
 
+    public String getType() { return type; }
+
     public String toString() {
             var gsonBuilder = new GsonBuilder();
             var gson = gsonBuilder.create();
             var m = new HashMap<String,Object>();
             m.put("id", id);
             m.put("time", getEventTime());
-            m.put("type", getClass().getSimpleName());
+            m.put("type", type);
             m.put("properties", getProperties());
             return gson.toJson(m);
     }
+
+
+    public Optional<Direction> getDirection(String property) {
+        if(properties.containsKey(property)) {
+            try {
+                var direction = Direction.valueOf(properties.get(property));
+                return Optional.of(direction);
+            } catch(Exception e) {
+
+            }
+        }
+        return Optional.empty();
+    }
+    public Optional<Direction> getDirection() { return getDirection("direction"); }
+
+    public Optional<Tile> getTile(String prefix) {
+        if(properties.containsKey(prefix+"board") &&
+           properties.containsKey(prefix+"row") &&
+           properties.containsKey(prefix + "column")) {
+            var board = game.getBoard(properties.get(prefix+"board"));
+            if(board != null) {
+                try {
+                    var row = Integer.parseInt(properties.get(prefix+"row"));
+                    var column = Integer.parseInt(properties.get(prefix+"column"));
+                    var tile = board.getTile(column, row);
+                    if(tile != null) return Optional.of(tile);
+                } catch(NumberFormatException e) {
+                }
+            }
+        }
+        return Optional.empty();
+    }
+    public Optional<Tile> getTile() { return getTile(""); }
 }
