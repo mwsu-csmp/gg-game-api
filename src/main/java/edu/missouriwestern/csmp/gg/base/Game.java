@@ -353,7 +353,10 @@ public abstract class Game implements Container {
 	}
 
 	public void propagateEvent(Event event) {
-		eventPropagator.accept(event);
+		eventPropagator.acceptEvent(event);
+	}
+	public void propagateEvent(Event event, long delayTime) {
+		eventPropagator.acceptEvent(event, delayTime);
 	}
 
 	public Tile generateTile(Board board, int column, int row, String type, Map<String,String> properties) {

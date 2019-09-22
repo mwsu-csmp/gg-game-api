@@ -11,4 +11,10 @@ public interface EventListener extends Consumer<Event> {
   }
 
   public void acceptEvent(Event event);
+
+  public default void acceptEvent(Event event, long delayTime) {
+      // delay not implemented by default, must be overridden
+      // (should be overridden by server provisioning Game)
+      acceptEvent(event);
+  }
 }
