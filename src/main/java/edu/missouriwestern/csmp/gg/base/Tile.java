@@ -49,7 +49,6 @@ public class Tile implements Container, HasProperties {
 	@Override
 	public Game getGame() { return board.getGame(); }
 
-	@Deprecated // use Tile class names for types
 	public String getType() { return type; }
 
 	/**
