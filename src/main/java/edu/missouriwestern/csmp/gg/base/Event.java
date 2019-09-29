@@ -75,36 +75,4 @@ public class Event implements HasProperties {
             return gson.toJson(m);
     }
 
-
-    public Optional<Direction> getDirection(String property) {
-        if(properties.containsKey(property)) {
-            try {
-                var direction = Direction.valueOf(properties.get(property));
-                return Optional.of(direction);
-            } catch(Exception e) {
-
-            }
-        }
-        return Optional.empty();
-    }
-    public Optional<Direction> getDirection() { return getDirection("direction"); }
-
-    public Optional<Tile> getTile(String prefix) {
-        if(properties.containsKey(prefix+"board") &&
-           properties.containsKey(prefix+"row") &&
-           properties.containsKey(prefix + "column")) {
-            var board = game.getBoard(properties.get(prefix+"board"));
-            if(board != null) {
-                try {
-                    var row = Integer.parseInt(properties.get(prefix+"row"));
-                    var column = Integer.parseInt(properties.get(prefix+"column"));
-                    var tile = board.getTile(column, row);
-                    if(tile != null) return Optional.of(tile);
-                } catch(NumberFormatException e) {
-                }
-            }
-        }
-        return Optional.empty();
-    }
-    public Optional<Tile> getTile() { return getTile(""); }
 }
