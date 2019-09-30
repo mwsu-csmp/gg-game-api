@@ -278,6 +278,7 @@ public abstract class Game implements Container {
 
 	public Event entityMovedEvent(Entity ent, Container prev) {
 		var properties = new HashMap<String,String>();
+		properties.put("entity", ""+ent.getID());
 		if(prev instanceof Tile) {
 			properties.put("previous-board", ((Tile)prev).getBoard().getName());
 			properties.put("previous-row", ((Tile)prev).getRow()+"");
