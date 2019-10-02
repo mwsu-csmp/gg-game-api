@@ -5,15 +5,21 @@ import com.google.common.collect.HashBiMap;
 import com.google.gson.GsonBuilder;
 import net.sourcedestination.funcles.tuple.Pair;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static net.sourcedestination.funcles.tuple.Pair.makePair;
 
 /** represents a 2d grid of tiles used as a playing surface for a game
  *  */
-public class Board implements EventProducer {
-	private static Logger logger = Logger.getLogger(EventProducer.class.getCanonicalName());
+public class Board {
+	private static Logger logger = Logger.getLogger(Board.class.getCanonicalName());
 
 	private final Map<Pair<Integer>, Tile> tiles;
 	private final BiMap<Character,String> tileTypeChars;
@@ -36,15 +42,23 @@ public class Board implements EventProducer {
 	// TODO: re-introduce tile generators when tiles are updated to have subclasses
 	public Board(Map<Character, String> tileTypeChars, Game game, String name, String charMap,
                  Map<Character, Map<String,String>> tileTypeProperties,
-                 Map<Pair<Integer>, Map<String,String>> tileProperties) {
+                 Map<Pair<Integer>, Map<String,String>> tileProperties,
+				 Tile ... initialTiles) {
+		this.game = game;
 		var tiles = new HashMap<Pair<Integer>,Tile>();
+
+		for(Tile t : initialTiles) {
+			t.setBoard(this);
+			tiles.put(makePair(t.getColumn(), t.getRow()), t);
+		}
+
 		int col=0, row=0;
 		for(char c : charMap.toCharArray()) {
 			if(c == '\n') { // reset to next row
 				row++; // increment row
 				col = 0; // start at first column
 			} else  {  // create a tile in this column
-				if(tileTypeChars.containsKey(c)) {
+				if(!tiles.containsKey(makePair(col, row)) && tileTypeChars.containsKey(c)) {
                     var properties = new HashMap<String,String>();
 
                     if(tileTypeProperties.containsKey(c))  // if properties for tile type were specified
@@ -55,31 +69,16 @@ public class Board implements EventProducer {
                         properties.putAll(tileProperties.get(Pair.makePair(""+col, ""+row)));
                     if(!properties.containsKey("character"))
                     	properties.put("character", ""+c);
-                    var tile = new Tile(this, col, row, tileTypeChars.get(c), properties);
+                    var tile = game.generateTile(this, col, row, tileTypeChars.get(c), properties);
+                    tile.setBoard(this);
 					tiles.put(Pair.makePair(col, row), tile);
 				}
 				col++; // increment column
 			}
 		}
-		this.game = game;
 		this.name = name;
 		this.tileTypeChars = HashBiMap.create(tileTypeChars);
 		this.tiles = Collections.unmodifiableMap(tiles);
-	}
-
-	@Override
-	public void registerListener(EventListener listener) {
-		listeners.put(listener, null);
-	}
-
-	@Override
-	public void deregisterListener(EventListener listener) {
-		listeners.put(listener, null);
-	}
-
-	@Override
-	public Stream<EventListener> getListeners() {
-		return listeners.keySet().stream();
 	}
 
 	/**
@@ -220,6 +219,16 @@ public class Board implements EventProducer {
 		m.put("tilemap", getTileMap());
 		m.put("tileTypes", tileTypeChars);
 		return gson.toJson(m);
+	}
+
+	/** loads a text file resource as a string.
+	 * used to load maps from text files in spring config */
+	public static String loadMap(String mapFileName) throws IOException {
+		var mapString = new BufferedReader(new InputStreamReader(
+				Board.class.getClassLoader()
+						.getResourceAsStream(mapFileName)))
+				.lines().collect(Collectors.joining("\n"));
+		return mapString;
 	}
 }
 

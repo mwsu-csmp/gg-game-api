@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Determines if an entity should be saved to the db when destroyed and searched for in the db
- * when created before assinging a brand new entity ID
+ * when created before assigning a brand new entity ID
  */
 @Retention(RetentionPolicy.RUNTIME) // checked in order to determine if DB should be used
 @Target(ElementType.TYPE)
