@@ -34,19 +34,15 @@ public abstract class Game implements Container {
 	private final Multimap<Container, Entity> containerContents;
 	private final Map<Entity, Container> entityLocations;
 
-	private Map<Tuple3<Board, Integer, Integer>,Tile> initialTiles = new HashMap<>();
-
 	public Game(DataStore dataStore,
 				EventListener eventPropagator,
-				Consumer<EventListener> incomingEventCallback,
-				Tile ... initialTiles) {
-		this(dataStore, eventPropagator, incomingEventCallback, new HashMap<>(), initialTiles);
+				Consumer<EventListener> incomingEventCallback) {
+		this(dataStore, eventPropagator, incomingEventCallback, new HashMap<>());
 	}
 	public Game(DataStore dataStore,
 				EventListener eventPropagator,
 				Consumer<EventListener> incomingEventCallback,
-				Map<String, Function3<Board,Integer,Integer,Tile>> tileGenerators,
-				Tile ... initialTiles) {
+				Map<String, Function3<Board,Integer,Integer,Tile>> tileGenerators) {
 		this.dataStore = dataStore;
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
@@ -66,10 +62,6 @@ public abstract class Game implements Container {
 		});
 
 		this.tileGenerators = tileGenerators;
-
-		for(Tile t : initialTiles) {
-			this.initialTiles.put(makeTuple(t.getBoard(), t.getColumn(), t.getRow()), t);
-		}
 	}
 
 	@Override
@@ -361,11 +353,13 @@ public abstract class Game implements Container {
 	}
 
 	public Tile generateTile(Board board, int column, int row, String type, Map<String,String> properties) {
-		if(initialTiles.containsKey(makeTuple(board, column, row)))
-			return initialTiles.get(makeTuple(board, column, row));
+		Tile tile;
 		if(tileGenerators.containsKey(type))
-			return tileGenerators.get(type).apply(board, column, row);
-		return new Tile(board, column, row, type, properties);
+			tile = tileGenerators.get(type).apply(board, column, row);
+		else tile = new Tile(board, column, row, type, properties);
+		if(tile instanceof EventListener)
+			registerListener((EventListener)tile);
+		return tile;
 	}
 
 	/** create an agent for the specified id/role (or retrieve existing agent)

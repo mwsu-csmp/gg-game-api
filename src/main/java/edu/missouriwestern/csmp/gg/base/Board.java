@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static net.sourcedestination.funcles.tuple.Pair.makePair;
+
 /** represents a 2d grid of tiles used as a playing surface for a game
  *  */
 public class Board {
@@ -40,15 +42,23 @@ public class Board {
 	// TODO: re-introduce tile generators when tiles are updated to have subclasses
 	public Board(Map<Character, String> tileTypeChars, Game game, String name, String charMap,
                  Map<Character, Map<String,String>> tileTypeProperties,
-                 Map<Pair<Integer>, Map<String,String>> tileProperties) {
+                 Map<Pair<Integer>, Map<String,String>> tileProperties,
+				 Tile ... initialTiles) {
+		this.game = game;
 		var tiles = new HashMap<Pair<Integer>,Tile>();
+
+		for(Tile t : initialTiles) {
+			t.setBoard(this);
+			tiles.put(makePair(t.getColumn(), t.getRow()), t);
+		}
+
 		int col=0, row=0;
 		for(char c : charMap.toCharArray()) {
 			if(c == '\n') { // reset to next row
 				row++; // increment row
 				col = 0; // start at first column
 			} else  {  // create a tile in this column
-				if(tileTypeChars.containsKey(c)) {
+				if(!tiles.containsKey(makePair(col, row)) && tileTypeChars.containsKey(c)) {
                     var properties = new HashMap<String,String>();
 
                     if(tileTypeProperties.containsKey(c))  // if properties for tile type were specified
@@ -60,12 +70,12 @@ public class Board {
                     if(!properties.containsKey("character"))
                     	properties.put("character", ""+c);
                     var tile = game.generateTile(this, col, row, tileTypeChars.get(c), properties);
+                    tile.setBoard(this);
 					tiles.put(Pair.makePair(col, row), tile);
 				}
 				col++; // increment column
 			}
 		}
-		this.game = game;
 		this.name = name;
 		this.tileTypeChars = HashBiMap.create(tileTypeChars);
 		this.tiles = Collections.unmodifiableMap(tiles);

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Tile implements Container, HasProperties {
 	public final int row;
 	public final int column;
-	private final Board board;
+	private Board board;
 	private final String type;
 	private final Map<String,String> properties;
 
@@ -21,6 +21,16 @@ public class Tile implements Container, HasProperties {
 	 * */
 	protected Tile(Board board, int column, int row, String type, Map<String,String> properties) {
 		this.board = board;
+		this.row = row;
+		this.column = column;
+		this.type = type;
+		this.properties = new ConcurrentHashMap<>(properties);
+	}
+
+	/**
+	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
+	 * */
+	protected Tile(int column, int row, String type, Map<String,String> properties) {
 		this.row = row;
 		this.column = column;
 		this.type = type;
@@ -66,6 +76,14 @@ public class Tile implements Container, HasProperties {
 	public void setProperty(String key, String value) {
 		properties.put(key, value);
 		board.getGame().propagateEvent(tileStatusUpdateEvent());
+	}
+
+	// added to avoid circular references in spring config
+	// TODO: consider a better workaround that allows board to stay final
+	public void setBoard(Board board) {
+		this.board = board;
+		if(this instanceof EventListener)
+			getGame().registerListener((EventListener)this);
 	}
 
 	/** returns a JSON representation of this tile and its properties
