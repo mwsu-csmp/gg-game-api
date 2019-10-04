@@ -11,40 +11,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Tile implements Container, HasProperties {
 	public final int row;
 	public final int column;
+	final char character;
 	private Board board;
 	private final String type;
 	private final Map<String,String> properties;
 
+
 	/**
 	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
-	 * @param board given Board
 	 * */
-	protected Tile(Board board, int column, int row, String type, Map<String,String> properties) {
-		this.board = board;
+	protected Tile(int column, int row, String type, char character, Map<String,String> properties) {
 		this.row = row;
 		this.column = column;
 		this.type = type;
+		this.character = character;
 		this.properties = new ConcurrentHashMap<>(properties);
 	}
-
-	/**
-	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
-	 * */
-	protected Tile(int column, int row, String type, Map<String,String> properties) {
-		this.row = row;
-		this.column = column;
-		this.type = type;
-		this.properties = new ConcurrentHashMap<>(properties);
-	}
-
-	/**
-	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
-	 * @param board given Board
-	 * */
-	protected Tile(Board board, int column, int row, String type) {
-		this(board, column, row, type, new HashMap<>());
-	}
-
 
 	/** row placement of the tile on the board */
 	public int getRow() {
@@ -57,9 +39,11 @@ public class Tile implements Container, HasProperties {
 	}
 
 	@Override
-	public Game getGame() { return board.getGame(); }
+	public Game getGame() { return board == null ? null : board.getGame(); }
 
 	public String getType() { return type; }
+
+	public char getCharacter() { return character; }
 
 	/**
 	 * Return the {@link Board} associated with this tile
@@ -75,14 +59,15 @@ public class Tile implements Container, HasProperties {
 	@Override
 	public void setProperty(String key, String value) {
 		properties.put(key, value);
-		board.getGame().propagateEvent(tileStatusUpdateEvent());
+		if(getGame() != null)
+			board.getGame().propagateEvent(tileStatusUpdateEvent());
 	}
 
 	// added to avoid circular references in spring config
 	// TODO: consider a better workaround that allows board to stay final
 	public void setBoard(Board board) {
 		this.board = board;
-		if(this instanceof EventListener)
+		if(this instanceof EventListener && getGame() != null)
 			getGame().registerListener((EventListener)this);
 	}
 

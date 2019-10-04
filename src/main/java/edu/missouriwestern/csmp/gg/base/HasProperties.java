@@ -8,6 +8,11 @@ public interface HasProperties {
     public Map<String,String> getProperties();
     public void setProperty(String key, String value);
 
+    public default void setProperties(Map<String,String> properties) {
+        for(var entry : properties.entrySet())
+            setProperty(entry.getKey(), entry.getValue());
+    }
+
     public default boolean hasProperty(String key) {
         return getProperties().containsKey(key);
     }

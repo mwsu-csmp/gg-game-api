@@ -2,9 +2,6 @@ package edu.missouriwestern.csmp.gg.base;
 
 import com.google.common.collect.*;
 import com.google.gson.GsonBuilder;
-import net.sourcedestination.funcles.function.Function3;
-import net.sourcedestination.funcles.tuple.Tuple3;
-import static net.sourcedestination.funcles.tuple.Tuple.makeTuple;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +21,6 @@ public abstract class Game implements Container {
 	private final Map<EventListener,Object> listeners = new ConcurrentHashMap<>();
 	private final DataStore dataStore;
 	private final EventListener eventPropagator;
-	private final Map<String, Function3<Board,Integer,Integer,Tile>> tileGenerators;
 
 	// no concurrent set, so only keys used to mimic set
 	final BiMap<Integer, Entity> registeredEntities;
@@ -36,13 +32,8 @@ public abstract class Game implements Container {
 
 	public Game(DataStore dataStore,
 				EventListener eventPropagator,
-				Consumer<EventListener> incomingEventCallback) {
-		this(dataStore, eventPropagator, incomingEventCallback, new HashMap<>());
-	}
-	public Game(DataStore dataStore,
-				EventListener eventPropagator,
 				Consumer<EventListener> incomingEventCallback,
-				Map<String, Function3<Board,Integer,Integer,Tile>> tileGenerators) {
+				Board ... boards) {
 		this.dataStore = dataStore;
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
@@ -61,7 +52,7 @@ public abstract class Game implements Container {
 			}
 		});
 
-		this.tileGenerators = tileGenerators;
+		for(var board : boards) addBoard(board);
 	}
 
 	@Override
@@ -180,8 +171,9 @@ public abstract class Game implements Container {
 		return boards.get(name);
 	}
 
-	public void addBoard(String boardId, Board board) {
-		boards.put(boardId, board);
+	public void addBoard(Board board) {
+		board.setGame(this);
+		boards.put(board.getName(), board);
 	}
 
 	/**
@@ -350,16 +342,6 @@ public abstract class Game implements Container {
 	}
 	public void propagateEvent(Event event, long delayTime) {
 		eventPropagator.acceptEvent(event, delayTime);
-	}
-
-	public Tile generateTile(Board board, int column, int row, String type, Map<String,String> properties) {
-		Tile tile;
-		if(tileGenerators.containsKey(type))
-			tile = tileGenerators.get(type).apply(board, column, row);
-		else tile = new Tile(board, column, row, type, properties);
-		if(tile instanceof EventListener)
-			registerListener((EventListener)tile);
-		return tile;
 	}
 
 	/** create an agent for the specified id/role (or retrieve existing agent)
