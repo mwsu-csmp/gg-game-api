@@ -1,6 +1,7 @@
 package edu.missouriwestern.csmp.gg.base;
 
 import com.google.gson.GsonBuilder;
+import net.sourcedestination.funcles.function.Function2;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,11 @@ public class Tile implements Container, HasProperties {
 	private final String type;
 	private final Map<String,String> properties;
 
+	public static Function2<Integer,Integer,Tile> getGenerator(char character,
+															   String type,
+															   Map<String,String> properties) {
+		return (col,row) -> new Tile(col, row, type, character, properties);
+	}
 
 	/**
 	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
