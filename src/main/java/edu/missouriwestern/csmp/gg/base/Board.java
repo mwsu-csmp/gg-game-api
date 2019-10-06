@@ -2,7 +2,6 @@ package edu.missouriwestern.csmp.gg.base;
 
 import com.google.gson.GsonBuilder;
 import net.sourcedestination.funcles.function.Function2;
-import net.sourcedestination.funcles.function.Function3;
 import net.sourcedestination.funcles.tuple.Pair;
 
 import java.io.BufferedReader;
@@ -34,12 +33,10 @@ public class Board {
 	 *
 	 * @param name
 	 * @param charMap
-	 * @param tileProperties
 	 */
 	public Board(String name,
 				 String charMap,
 				 Map<Character, Function2<Integer,Integer,Tile>> tileGenerators,
-                 Map<Pair<Integer>, Map<String,String>> tileProperties,
 				 Tile ... initialTiles) {
 		var tiles = new HashMap<Pair<Integer>,Tile>();
 
@@ -58,8 +55,6 @@ public class Board {
                     var properties = new HashMap<String,String>();
 
                     // spring XML makes pairs of strings instead of pairs of integers, so strings are used below
-                    if(tileProperties.containsKey(Pair.makePair(""+col, ""+row)))  // if properties for this location were specified
-                        properties.putAll(tileProperties.get(Pair.makePair(""+col, ""+row)));
                     if(!properties.containsKey("character"))
                     	properties.put("character", ""+c);
                     var tile = tileGenerators.get(c).apply(col, row);
