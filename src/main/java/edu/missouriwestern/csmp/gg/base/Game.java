@@ -2,43 +2,57 @@ package edu.missouriwestern.csmp.gg.base;
 
 import com.google.common.collect.*;
 import com.google.gson.GsonBuilder;
-import edu.missouriwestern.csmp.gg.base.events.EntityCreationEvent;
-import edu.missouriwestern.csmp.gg.base.events.EntityDeletionEvent;
-import edu.missouriwestern.csmp.gg.base.events.EntityMovedEvent;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /** Class for managing the state of games using the 2D API
  */
-public abstract class Game implements Container, EventProducer {
+public abstract class Game implements Container {
 
 	private final Map<String,Board> boards = new ConcurrentHashMap<>();
 	private final long startTime;    // time when game was started or restarted
 	private final long elapsedTime;  // time elapsed in game since start or last restart
-	private final AtomicInteger nextEntityID = new AtomicInteger(1);
+	private final AtomicInteger nextEntityID;
 	private final AtomicInteger nextEventID = new AtomicInteger(1);
 	private final Map<EventListener,Object> listeners = new ConcurrentHashMap<>();
+	private final DataStore dataStore;
+	private final EventListener eventPropagator;
 
 	// no concurrent set, so only keys used to mimic set
-	private final BiMap<Integer, Entity> registeredEntities;
-	private final BiMap<String, Player> allPlayers;
+	final BiMap<Integer, Entity> registeredEntities;
+	private final BiMap<String, Agent> allAgents;
 
 	// access must be protected by monitor
 	private final Multimap<Container, Entity> containerContents;
 	private final Map<Entity, Container> entityLocations;
 
-
-	public Game() {
+	public Game(DataStore dataStore,
+				EventListener eventPropagator,
+				Consumer<EventListener> incomingEventCallback,
+				Board ... boards) {
+		this.dataStore = dataStore;
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
 		registeredEntities = Maps.synchronizedBiMap(HashBiMap.create());
-		allPlayers = Maps.synchronizedBiMap(HashBiMap.create());
+		allAgents = Maps.synchronizedBiMap(HashBiMap.create());
 		// access must be protected by monitor
 		containerContents = HashMultimap.create();
 		entityLocations = new HashMap<>();
+		  // set next entity ID to be one more than the biggest one in the database
+		this.nextEntityID = new AtomicInteger(dataStore.getMaxEntityId() + 1);
+		this.eventPropagator = eventPropagator;
+		incomingEventCallback.accept(new EventListener() {
+			@Override
+			public synchronized void acceptEvent(Event event) {
+				getListeners().forEach(listener -> listener.accept(event));
+			}
+		});
+
+		for(var board : boards) addBoard(board);
 	}
 
 	@Override
@@ -54,14 +68,16 @@ public abstract class Game implements Container, EventProducer {
 		return System.currentTimeMillis() - startTime + elapsedTime;
 	}
 
+	public DataStore getDataStore(){
+		return (DataStore) dataStore;
+	}
+
 	/** begins forwarding all game events to specified listener */
-	@Override
 	public void registerListener(EventListener listener) {
 		listeners.put(listener, "thing");
 	}
 
 	/** stops forwarding all game events to specified listener */
-	@Override
 	public void deregisterListener(EventListener listener) {
 		listeners.put(listener, "thing");
 	}
@@ -70,27 +86,27 @@ public abstract class Game implements Container, EventProducer {
 	 * All listeners registered via registerListener
 	 * @return
 	 */
-	@Override
 	public Stream<EventListener> getListeners() {
 		return listeners.keySet().stream();
 	}
 
-	/** add a player to the game
-	 * @param player player to be added to the game
+	/** add an agent to the game
+	 * @param agent agent to be added to the game
 	 */
-	public void addPlayer(Player player) {
-		allPlayers.put(player.getID(), player);
+	public void addAgent(Agent agent) {
+		allAgents.put(agent.getAgentID(), agent);
+		getDataStore().load(agent);
 	}
 
-	/** remove player from the game
+	/** remove agent from the game
 	 *
-	 * @param player player to be removed from the game
+	 * @param agent agent to be removed from the game
 	 */
-	public void removePlayer(Player player) {
-		allPlayers.remove(player.getID());
+	public void removeAgent(Agent agent) {
+		allAgents.remove(agent.getAgentID());
 	}
 	public void removePlayer(String playerId) {
-		allPlayers.remove(playerId);
+		allAgents.remove(playerId);
 	}
 
 	/** find player with associated ID that has joined this game
@@ -98,8 +114,8 @@ public abstract class Game implements Container, EventProducer {
 	 * @param id ID of player to be found
 	 * @return player object with associated ID
 	 */
-	public Player getPlayer(String id) {
-		return allPlayers.get(id);
+	public Agent getAgent(String id) {
+		return allAgents.get(id);
 	}
 
 	/**
@@ -137,14 +153,14 @@ public abstract class Game implements Container, EventProducer {
 	 * @return the number of players in the game
 	 */
 	public int getNumPlayers() {
-		return allPlayers.size();
+		return allAgents.size();
 	}
 	/**
-	 * Returns the set of all {@link Player}s
+	 * Returns the set of all {@link Agent}s
 	 * @return connected Players
 	 */
-	public Stream<Player> getAllPlayers() {
-		return allPlayers.values().stream();
+	public Stream<Agent> getAllAgents() {
+		return allAgents.values().stream();
 	}
 
 	/**
@@ -155,8 +171,9 @@ public abstract class Game implements Container, EventProducer {
 		return boards.get(name);
 	}
 
-	public void addBoard(String boardId, Board board) {
-		boards.put(boardId, board);
+	public void addBoard(Board board) {
+		board.setGame(this);
+		boards.put(board.getName(), board);
 	}
 
 	/**
@@ -166,8 +183,20 @@ public abstract class Game implements Container, EventProducer {
 	 */
 	public void addEntity(Entity ent) {
 		assert ent != null;
-
-		var id = nextEntityID.getAndIncrement();
+		var id = -1; // temporary id, -1 means entity was not found in db
+		if(dataStore != null && ent.getClass().isAnnotationPresent(Permanent.class)) {
+			// this entity should be loaded from the database if possible
+			var ids = dataStore.search(ent.getProperties());
+			if(ids.size() == 1) {  // found a unique entity in the db
+				id = ids.get(0);   // assign its id
+				ent.setProperty("id", ""+id);  // set the id as a property to look up other properties
+				dataStore.load(ent);  // load other properties from the database
+			}
+		}
+		if(id == -1) {
+			// could not load id from database
+			id = nextEntityID.getAndIncrement();
+		}
 		registeredEntities.put(id, ent);
 		synchronized (this) { // add entity to the game's contents as default
 			entityLocations.put(ent, this);
@@ -176,7 +205,10 @@ public abstract class Game implements Container, EventProducer {
 		if(ent instanceof EventListener) {
 			registerListener((EventListener)ent);
 		}
-		accept(new EntityCreationEvent(this, ent));
+		propagateEvent(new Event(this, "entity-creation",
+				Map.of(
+						"entity-id", ent.getID()+""
+				)));
 	}
 
 	/**
@@ -200,7 +232,10 @@ public abstract class Game implements Container, EventProducer {
 		}
 
 		// alert other game components to entity removal
-		accept(new EntityDeletionEvent(this, ent));
+		propagateEvent(new Event(this, "entity-deletion",
+				Map.of(
+						"entity-id", ent.getID()+""
+				)));
 	}
 
 	/** moves the entity to a new Container.
@@ -215,17 +250,35 @@ public abstract class Game implements Container, EventProducer {
 
 		Container prev = getGame().getEntityLocation(ent);
 
-		synchronized (this) {
 			// move entity to new location
 			var currentLocation = getEntityLocation(ent);
-			if(currentLocation != null) {
+			if(currentLocation != null)
 				entityLocations.remove(ent);
 				containerContents.remove(currentLocation, ent);
-			}
 			entityLocations.put(ent, container);
 			containerContents.put(container, ent);
+		propagateEvent(entityMovedEvent(ent, prev));
+	}
+
+	public Event entityMovedEvent(Entity ent, Container prev) {
+		var properties = new HashMap<String,String>();
+		properties.put("entity", ""+ent.getID());
+		if(prev instanceof Tile) {
+			properties.put("previous-board", ((Tile)prev).getBoard().getName());
+			properties.put("previous-row", ((Tile)prev).getRow()+"");
+			properties.put("previous-column", ((Tile)prev).getColumn()+"");
+		} else if(prev instanceof Entity) {
+			properties.put("previous-entity-container", ((Entity)prev).getID()+"");
 		}
-		accept(new EntityMovedEvent(ent, prev));
+		var current = getEntityLocation(ent);
+		if(current instanceof Tile) {
+			properties.put("board", ((Tile)current).getBoard().getName());
+			properties.put("row", ((Tile)current).getRow()+"");
+			properties.put("column", ((Tile)current).getColumn()+"");
+		} else if(current instanceof Entity) {
+			properties.put("entity-container", ((Entity)current).getID()+"");
+		}
+		return new Event(this, "entity-moved", properties);
 	}
 
 	/** Determines whether or not a specified Container holds the specified entity */
@@ -284,4 +337,18 @@ public abstract class Game implements Container, EventProducer {
 		return gson.toJson(m);
 	}
 
+	public void propagateEvent(Event event) {
+		eventPropagator.acceptEvent(event);
+	}
+	public void propagateEvent(Event event, long delayTime) {
+		eventPropagator.acceptEvent(event, delayTime);
+	}
+
+	/** create an agent for the specified id/role (or retrieve existing agent)
+	 * called when a client connects to control the agent
+	 * @param id
+	 * @param role
+	 * @return
+	 */
+	public abstract Agent getAgent(String id, String role);
 }

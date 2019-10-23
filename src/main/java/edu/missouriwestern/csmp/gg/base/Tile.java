@@ -1,43 +1,38 @@
 package edu.missouriwestern.csmp.gg.base;
 
 import com.google.gson.GsonBuilder;
-import edu.missouriwestern.csmp.gg.base.events.TileStateUpdateEvent;
+import net.sourcedestination.funcles.function.Function2;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 
-// TODO: allow / encourage Tile subclasses to help simplify xml config and add a good spot for event listeners
 /** Represents spaces on the {@link Board} that contain entities */
-public final class Tile implements Container, HasProperties {
+public class Tile implements Container, HasProperties {
 	public final int row;
 	public final int column;
-	private final Board board;
+	final char character;
+	private Board board;
 	private final String type;
 	private final Map<String,String> properties;
 
+	public static Function2<Integer,Integer,Tile> getGenerator(char character,
+															   String type,
+															   Map<String,String> properties) {
+		return (col,row) -> new Tile(col, row, type, character, properties);
+	}
+
 	/**
 	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
-	 * @param board given Board
 	 * */
-	protected Tile(Board board, int column, int row, String type, Map<String,String> properties) {
-		this.board = board;
+	protected Tile(int column, int row, String type, char character, Map<String,String> properties) {
 		this.row = row;
 		this.column = column;
 		this.type = type;
+		this.character = character;
 		this.properties = new ConcurrentHashMap<>(properties);
 	}
-
-	/**
-	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
-	 * @param board given Board
-	 * */
-	protected Tile(Board board, int column, int row, String type) {
-		this(board, column, row, type, new HashMap<>());
-	}
-
 
 	/** row placement of the tile on the board */
 	public int getRow() {
@@ -50,10 +45,11 @@ public final class Tile implements Container, HasProperties {
 	}
 
 	@Override
-	public Game getGame() { return board.getGame(); }
+	public Game getGame() { return board == null ? null : board.getGame(); }
 
-	@Deprecated // use Tile class names for types
 	public String getType() { return type; }
+
+	public char getCharacter() { return character; }
 
 	/**
 	 * Return the {@link Board} associated with this tile
@@ -69,7 +65,16 @@ public final class Tile implements Container, HasProperties {
 	@Override
 	public void setProperty(String key, String value) {
 		properties.put(key, value);
-		board.accept(new TileStateUpdateEvent(this));
+		if(getGame() != null)
+			board.getGame().propagateEvent(tileStatusUpdateEvent());
+	}
+
+	// added to avoid circular references in spring config
+	// TODO: consider a better workaround that allows board to stay final
+	public void setBoard(Board board) {
+		this.board = board;
+		if(this instanceof EventListener && getGame() != null)
+			getGame().registerListener((EventListener)this);
 	}
 
 	/** returns a JSON representation of this tile and its properties
@@ -85,6 +90,15 @@ public final class Tile implements Container, HasProperties {
 		m.put("type", type);
 		m.put("properties", properties);
 		return gson.toJson(m);
+	}
+
+	public Event tileStatusUpdateEvent() {
+		return new Event(getGame(), "tile-status-update",
+				Map.of(
+						"board", getBoard().getName(),
+						"row", row+"",
+						"column", column+""
+				));
 	}
 
 }

@@ -1,8 +1,11 @@
 package edu.missouriwestern.csmp.gg.base;
 
+import com.google.gson.GsonBuilder;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 // TODO: create annotation indicating required and optional properties
@@ -16,24 +19,24 @@ public class Event implements HasProperties {
     private final int id;
     private final Game game;
     private final long eventTime;
+    private final String type;
 
-    public Event(Game game) {
-        this(game, game.getNextEventId(), new HashMap<>());
+    public Event(Game game, String type) {
+        this(game, type, game.getNextEventId(), new HashMap<>());
     }
 
-    // TODO: eliminate this
-    public Event(Game game, int id) {
-        this(game, id, new HashMap<>());
+    private Event(Game game, String type, int id) {
+        this(game, type, id, new HashMap<>());
     }
 
-    public Event(Game game, Map<String,String> properties) {
-        this(game, game.getNextEventId(), properties);
+    public Event(Game game, String type, Map<String,String> properties) {
+        this(game, type, game.getNextEventId(), properties);
     }
 
-    // TODO: get rid of id param
-    public Event(Game game, int id, Map<String,String> properties) {
+    private Event(Game game, String type, int id, Map<String,String> properties) {
         this.id = id;
         this.game = game;
+        this.type = type;
         this.eventTime = game.getGameTime();
         properties = new HashMap<>(properties); // add id to properties
         properties.put("id", ""+id);
@@ -59,11 +62,17 @@ public class Event implements HasProperties {
         return game;
     }
 
-    public String toString() {
-        return "{ \"id\": " + id +
-                ", \"type\": " + getClass().getSimpleName() +
-                ", \"properties\": " + this.serializeProperties() +
-        "}";
+    public String getType() { return type; }
 
+    public String toString() {
+            var gsonBuilder = new GsonBuilder();
+            var gson = gsonBuilder.create();
+            var m = new HashMap<String,Object>();
+            m.put("id", id);
+            m.put("time", getEventTime());
+            m.put("type", type);
+            m.put("properties", getProperties());
+            return gson.toJson(m);
     }
+
 }
