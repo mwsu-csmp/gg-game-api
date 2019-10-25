@@ -221,7 +221,10 @@ public class Board {
 	}
 
 	/** loads a text file resource as a string.
-	 * used to load maps from text files in spring config */
+	 *  used to load maps from text files in spring config
+	 * @param mapFileName text file name for the map
+	 * @return the text file data
+	 */
 	public static String loadMap(String mapFileName) throws IOException {
 		var mapString = new BufferedReader(new InputStreamReader(
 				Board.class.getClassLoader()
