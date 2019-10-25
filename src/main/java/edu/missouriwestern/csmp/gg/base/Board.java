@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,13 +52,17 @@ public class Board {
 				row++; // increment row
 				col = 0; // start at first column
 			} else  {  // create a tile in this column
-				if(!tiles.containsKey(makePair(col, row)) && tileGenerators.containsKey(c)) {
+				if(!tiles.containsKey(makePair(col, row))) {
+					var generator = tileGenerators.get(c);
+
+					// generate genric tiles if no generator defined
+					if(generator == null) generator =  (fcol, frow) -> new Tile(fcol, frow, "generic", c, Map.of());
                     var properties = new HashMap<String,String>();
 
                     // spring XML makes pairs of strings instead of pairs of integers, so strings are used below
                     if(!properties.containsKey("character"))
                     	properties.put("character", ""+c);
-                    var tile = tileGenerators.get(c).apply(col, row);
+                    var tile = generator.apply(col, row);
                     tile.setProperties(properties);
                     tile.setBoard(this);
 					tiles.put(Pair.makePair(col, row), tile);
