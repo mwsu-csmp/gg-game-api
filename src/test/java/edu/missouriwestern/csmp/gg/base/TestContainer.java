@@ -16,19 +16,20 @@ public class TestContainer {
 
     @Test
     public void testAddEntity(){
-        game.addEntity(ent);
+
+        assertEquals(1, game.getEntities().count());
     }
 
     @Test
     public void removeEntity(){
 
-        assertEquals(0, game.getEntities().count());
+        assertEquals(1, game.getEntities().count());
     }
 
     @Test
     public void getEntities(){
 
-        assertEquals(0,game.getEntities().count());
+        assertEquals(1,game.getEntities().count());
 
     }
 
