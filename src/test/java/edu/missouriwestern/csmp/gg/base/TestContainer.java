@@ -45,6 +45,7 @@ public class TestContainer {
         assertEquals(1, game2.getEntities().count());
 
 
+        game.removeEntity(ent);
         game2.removeEntity(ent);
         assertEquals(0, game2.getEntities().count());
 
