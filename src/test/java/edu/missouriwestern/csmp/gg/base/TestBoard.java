@@ -6,6 +6,9 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
+//TODO: getHeight,getWidth do not seem correct.
+
+
 public class TestBoard {
     DummyTile tile = new DummyTile(0,0);
     DummyBoard board = new DummyBoard("unsmart-board", new Map1().toString(), tile);
@@ -55,21 +58,25 @@ public class TestBoard {
 
     @Test
     public void testGetWidth(){
-
+        assertEquals(112, board.getWidth());
     }
 
     @Test
     public void testGetHeight(){
-
+        assertEquals(1, board.getHeight());
     }
     @Test
-    public void testGetTileMap(){
-
-    }
+    public void testGetTileMap(){}
 
     @Test
-    public void testLoadMap(){
+    public void testLoadMap()  {
+        try {
+            String map = board.loadMap("Map1.txt");
 
+            System.out.println(map);
+        }catch(Exception e){
+            assertTrue(false);
+        }
     }
 
 }
