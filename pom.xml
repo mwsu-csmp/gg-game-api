@@ -12,9 +12,7 @@
     <distributionManagement>
       <repository>
         <id>2dapi</id>
-        <name>gg-game-api</name>
-        <url>https://maven.pkg.github.com/mwsu-csmp</url>
-        <layout>default</layout>
+        <url>http://maven.pkg.github.com/mwsu-csmp</url>
       </repository>   
     </distributionManagement>
          
