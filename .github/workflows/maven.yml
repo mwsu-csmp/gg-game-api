@@ -15,8 +15,5 @@ jobs:
         java-version: 10
     - name: Build with Maven
       run: mvn package
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploying to package
-        run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml -Dtoken=GH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+    - name: Deploying to package
+      run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml -Dtoken=GH_TOKEN=${{ secrets.GITHUB_TOKEN }}
