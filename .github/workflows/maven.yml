@@ -24,4 +24,4 @@ jobs:
         with:
           java-version: 10
       - name: Deploying to Github Package
-        run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp --file pom.xml
+        run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml
