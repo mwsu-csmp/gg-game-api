@@ -23,6 +23,5 @@ jobs:
     - uses: actions/labeler@v2
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
-    - name: deploying
-      run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml
+        run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml
       
