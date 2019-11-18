@@ -18,5 +18,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
+      - name: Set up JDK 10
+        uses: actions/setup-java@v1
+        with:
+          java-version: 10
       - name: Deploying to Github Package
         run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp --file pom.xml
