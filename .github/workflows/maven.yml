@@ -20,8 +20,17 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
     - uses: actions/labeler@v2
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
+=======
+      - uses: actions/checkout@v1
+      - name: Set up JDK 10
+        uses: actions/setup-java@v1
+        with:
+          java-version: 10
+      - name: Deploying to Github Package
+>>>>>>> parent of c5b5bf0... Merge pull request #40 from mwsu-csmp/McKFlat-patch-6
         run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml
       
