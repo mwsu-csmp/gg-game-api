@@ -16,11 +16,9 @@ jobs:
     - name: Build with Maven
       run: mvn package
       
-  deploy:
+  publish:
     runs-on: ubuntu-latest
     
+    needs: [build]
     steps:
-    - uses: actions/labeler@v2
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml
+      - uses: actions/checkout@v1
