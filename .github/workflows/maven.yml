@@ -15,13 +15,13 @@ jobs:
         java-version: 10
     - name: Build with Maven
       run: mvn package
-    - name: Deploying to package
       
   deploy:
     runs-on: ubuntu-latest
+    
     steps:
-    - name: Deploying to Github Package
     - uses: actions/labeler@v2
+    - name: Deploying to Github Package
       with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           run: mvn deploy -Dregistry=https://maven.pkg.github.com/mwsu-csmp/gg-game-api --file pom.xml
