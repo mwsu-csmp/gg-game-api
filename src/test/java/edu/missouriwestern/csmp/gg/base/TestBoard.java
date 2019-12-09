@@ -2,7 +2,6 @@ package edu.missouriwestern.csmp.gg.base;
 
 import org.junit.Test;
 
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -10,8 +9,13 @@ import static org.junit.Assert.*;
 
 
 public class TestBoard {
-    DummyTile tile = new DummyTile(0,0);
-    DummyBoard board = new DummyBoard("unsmart-board", new Map1().toString(), tile);
+    DummyTile tile1 = new DummyTile(0,0);
+    DummyTile tile2 = new DummyTile(0,1);
+    DummyTile tile3 = new DummyTile(1,0);
+    DummyTile tile4 = new DummyTile(1,1);
+
+    DummyBoard board = new DummyBoard("unsmart-board", new Map1().toString(), new DummyTile[]{tile1,tile2, tile3, tile4});
+
     DummyGame game = new DummyGame(board);
 
     @Test
@@ -38,7 +42,7 @@ public class TestBoard {
 
     @Test
     public void testGetTiles(){
-
+        System.out.println(board.getTiles());
     }
 
     @Test
@@ -58,12 +62,20 @@ public class TestBoard {
 
     @Test
     public void testGetWidth(){
+        DummyBoard widthBoard = new DummyBoard("get-width-board", "1");
         assertEquals(112, board.getWidth());
+        assertEquals(1, widthBoard.getWidth());
     }
 
     @Test
     public void testGetHeight(){
-        assertEquals(1, board.getHeight());
+        //height never exceeds with tile generator in constructor.
+        //the only thing that effects height are the specific tiles added.
+        assertEquals(2, board.getHeight());
+
+        DummyBoard heightBoard = new DummyBoard("get-height-board", "123455555555");
+        assertEquals(1, heightBoard.getHeight());
+
     }
     @Test
     public void testGetTileMap(){}

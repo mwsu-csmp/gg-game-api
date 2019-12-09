@@ -55,7 +55,7 @@ public class Board {
 				if(!tiles.containsKey(makePair(col, row))) {
 					var generator = tileGenerators.get(c);
 
-					// generate genric tiles if no generator defined
+					// generate generic tiles if no generator defined
 					if(generator == null) generator =  (fcol, frow) -> new Tile(fcol, frow, "generic", c, Map.of());
                     var properties = new HashMap<String,String>();
 
