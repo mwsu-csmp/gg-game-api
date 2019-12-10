@@ -2,14 +2,16 @@ package edu.missouriwestern.csmp.gg.base;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 public class TestDatastores {
-    /*
-     * This Test class is made to test the datastores package.
-     * This Test class will also test the DataStore interface.
-     */
 
+    DummyTile tile1 = new DummyTile(0,0);
+    DummyBoard board = new DummyBoard("unsmart-board", new Map1().toString(), tile1);
+    DummyGame game = new DummyGame(board);
+    DummyEntity entity = new DummyEntity(game);
 
-    // Testing DataStore interface
     @Test
     public void testSave(){
 
@@ -29,17 +31,5 @@ public class TestDatastores {
     public void testGetMaxEntityId(){
 
     }
-
-    //testing Neo4jDataStore
-    @Test
-    public void testGetPropertyTable(){
-
-    }
-
-    @Test
-    public void testSetGame(){
-
-    }
-
 
 }

@@ -1,7 +1,19 @@
 package edu.missouriwestern.csmp.gg.base;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.sourcedestination.funcles.function.Function2;
 import org.junit.Test;
 
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -17,7 +29,7 @@ public class TestBoard {
     DummyBoard board = new DummyBoard("unsmart-board", new Map1().toString(), new DummyTile[]{tile1,tile2, tile3, tile4});
 
     DummyGame game = new DummyGame(board);
-
+    DummyEntity entity = new DummyEntity(game);
     @Test
     public void testGetGame(){
         assertEquals(game, board.getGame());
@@ -32,12 +44,21 @@ public class TestBoard {
 
     @Test
     public void testGetAdjacentTile(){
+        assertEquals(tile3,board.getAdjacentTile(tile1, Direction.EAST));
+        assertEquals(null, board.getAdjacentTile(tile1, Direction.NORTH));
+        assertEquals(tile2, board.getAdjacentTile(tile1, Direction.SOUTH));
+        assertEquals(null, board.getAdjacentTile(tile1, Direction.WEST));
 
     }
 
     @Test
     public void testGetAdjacentTileDirection(){
+        assertEquals(Direction.EAST, board.getAdjacentTileDirection(tile1, tile3));
+        assertEquals(Direction.SOUTH, board.getAdjacentTileDirection(tile1, tile2));
+        assertEquals(Direction.NORTH, board.getAdjacentTileDirection(tile4, tile3));
 
+        //these tiles aren't adjacent
+        assertEquals(Direction.WEST, board.getAdjacentTileDirection(tile3, tile2));
     }
 
     @Test
@@ -47,17 +68,32 @@ public class TestBoard {
 
     @Test
     public void testGetTileStream(){
+        //parsing tilestream to json
+        JsonParser parser = new JsonParser();
+        JsonObject json = (JsonObject) parser.parse(board.getTileStream().toArray()[0].toString());
 
+        int column = Integer.parseInt(json.get("column").toString());
+        int row = Integer.parseInt(json.get("row").toString());
+        String type = json.get("type").toString();
+        String board = json.get("board").toString();
+        String properties = json.get("properties").toString();
+
+        assertEquals(107, column);
+        assertEquals(0, row);
+        assertEquals("\"generic\"", type);
+        assertEquals("\"unsmart-board\"", board);
+        assertEquals("{\"character\":\"#\"}", properties);
     }
 
     @Test
     public void TestGetTile(){
-
+        assertEquals(tile1, board.getTile(0,0));
+        assertEquals(Optional.empty(), board.getTile(entity));
     }
 
     @Test
     public void TestGetName(){
-
+        assertEquals("unsmart-board", board.getName());
     }
 
     @Test
@@ -73,26 +109,15 @@ public class TestBoard {
         //the only thing that effects height are the specific tiles added.
         assertEquals(2, board.getHeight());
 
+        Map<Character, Function2<Integer,Integer,Tile>> forTileGen = new HashMap<>();
+
         DummyBoard heightBoard = new DummyBoard("get-height-board", "123455555555");
         assertEquals(1, heightBoard.getHeight());
-
     }
     @Test
-    public void testGetTileMap(){}
-
-    @Test
-    public void testLoadMap()  throws Exception{
-
-
-
-            /*try {
-            String map = board.loadMap("/test/java/edu.missouriwestern.csmp.gg.base/Map1.txt");
-
-            System.out.println(map);
-        }catch(Exception e){
-            assertTrue(false);
-        }*/
-
+    public void testGetTileMap(){
+        assertEquals("5", board.getTileMap().substring(9,10));
     }
+
 
 }
