@@ -2,6 +2,7 @@ package edu.missouriwestern.csmp.gg.base;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
@@ -14,8 +15,12 @@ public class TestHasProperties {
     DummyBoard board = new DummyBoard("unsmart-board", new Map1().toString(), tile1);
     DummyGame game = new DummyGame(board);
     DummyEntity entity = new DummyEntity(game);
-
     JsonParser parser = new JsonParser();
+
+
+    public TestHasProperties() {
+        tile1.addEntity(entity);
+    }
 
     @Test
     public void testSetProperties(){
@@ -40,7 +45,8 @@ public class TestHasProperties {
 
     @Test
     public void testGetEntity(){
-        assertEquals(entity, tile1.getEntity());//tile1 should be apart of entity
+        assertEquals(1, tile1.getEntities().count());
+        assertEquals(entity, tile1.getEntities().findFirst().get());
     }
 
     @Test
