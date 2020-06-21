@@ -8,15 +8,14 @@
     <artifactId>2dapi</artifactId>
     <version>0.2-SNAPSHOT</version>
          
-         
     <distributionManagement>
       <repository>
-        <id>2dapi</id>
+        <id>github</id>
         <name>gg-game-api</name>
-        <url>https://maven.pkg.github.com/mwsu-csmp</url>
-      </repository>   
+        <url>https://maven.pkg.github.com/mwsu-csmp/gg-game-api</url>
+      </repository>
     </distributionManagement>
-         
+ 
     <build>
         <plugins>
             <plugin>
@@ -26,11 +25,8 @@
                 <configuration>
                     <source>1.10</source>
                     <target>1.10</target>
-
                 </configuration>
             </plugin>
-
-
         </plugins>
     </build>
 
