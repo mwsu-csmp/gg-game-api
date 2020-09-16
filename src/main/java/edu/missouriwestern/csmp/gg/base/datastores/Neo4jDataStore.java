@@ -1,7 +1,11 @@
 package edu.missouriwestern.csmp.gg.base.datastores;
 
 import edu.missouriwestern.csmp.gg.base.*;
-import org.neo4j.driver.v1.*;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.GraphDatabase;
+import org.neo4j.driver.v1.AuthTokens;
+import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.Session;
 import org.neo4j.driver.v1.types.Node;
 
 import java.util.ArrayList;
