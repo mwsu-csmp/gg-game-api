@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import static net.sourcedestination.funcles.tuple.Pair.makePair;
 
 /** represents a 2d grid of tiles used as a playing surface for a game
- *  */
+ *   */
 public class Board {
 	private static Logger logger = Logger.getLogger(Board.class.getCanonicalName());
 
