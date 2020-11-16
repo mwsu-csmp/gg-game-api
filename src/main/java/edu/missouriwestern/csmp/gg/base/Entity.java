@@ -12,7 +12,7 @@ public abstract class Entity implements HasProperties {
 	private final int id;
 	private final Game game;
 	private Direction heading;
-	private final Map<String,String> properties;
+	private final Map<String,Object> properties;
 
 	/**
 	 * Constructs Entity from a {@link Game}
@@ -32,14 +32,14 @@ public abstract class Entity implements HasProperties {
 	}
 
 	@Override
-	public Map<String,String> getProperties() {
+	public Map<String,Object> getProperties() {
 		var properties = new HashMap<>(this.properties); // add id to properties
-		properties.put("id", ""+id);
+		properties.put("id", id);
 		return Collections.unmodifiableMap(properties);
 	}
 
 	@Override
-	public void setProperty(String key, String value) {
+	public void setProperty(String key, Object value) {
 		properties.put(key, value);
 	}
 

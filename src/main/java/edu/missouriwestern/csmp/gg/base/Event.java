@@ -15,7 +15,7 @@ import java.util.Optional;
  */
 public class Event implements HasProperties {
 
-    private final Map<String,String> properties;
+    private final Map<String,Object> properties;
     private final int id;
     private final Game game;
     private final long eventTime;
@@ -29,11 +29,11 @@ public class Event implements HasProperties {
         this(game, type, id, new HashMap<>());
     }
 
-    public Event(Game game, String type, Map<String,String> properties) {
+    public Event(Game game, String type, Map<String,Object> properties) {
         this(game, type, game.getNextEventId(), properties);
     }
 
-    private Event(Game game, String type, int id, Map<String,String> properties) {
+    private Event(Game game, String type, int id, Map<String,Object> properties) {
         this.id = id;
         this.game = game;
         this.type = type;
@@ -44,12 +44,12 @@ public class Event implements HasProperties {
     }
 
     @Override
-    public Map<String, String> getProperties() {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
     @Override
-    public void setProperty(String key, String value) {
+    public void setProperty(String key, Object value) {
         throw new UnsupportedOperationException("Event properties are immutable");
     }
 

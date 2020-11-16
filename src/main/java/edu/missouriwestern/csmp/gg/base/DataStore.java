@@ -10,7 +10,7 @@ public interface DataStore {
 
 	public void load(HasProperties object);
 
-	public ArrayList<Integer> search(Map<String, String> map);
+	public ArrayList<Integer> search(Map<String, Object> map);
 
 	/** returns the largest entity id in the database */
 	public int getMaxEntityId();

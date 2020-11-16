@@ -57,7 +57,7 @@ public class Board {
 
 					// generate generic tiles if no generator defined
 					if(generator == null) generator =  (fcol, frow) -> new Tile(fcol, frow, "generic", c, Map.of());
-                    var properties = new HashMap<String,String>();
+                    var properties = new HashMap<String,Object>();
 
                     // spring XML makes pairs of strings instead of pairs of integers, so strings are used below
                     if(!properties.containsKey("character"))
@@ -200,7 +200,7 @@ public class Board {
 				var location = Pair.makePair(c, r);
 				if(tiles.containsKey(location))
 					sb.append(tiles.get(location).getCharacter());
-				else sb.append(' ');
+				else sb.append('?');
 			}
 			sb.append('\n');
 		}

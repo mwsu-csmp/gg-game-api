@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryDataStore implements DataStore {
-    private Map<Integer,Map<String,String>> entities = new ConcurrentHashMap<>();
-    private Map<String,Map<String,String>> agents = new ConcurrentHashMap<>();
+    private Map<Integer,Map<String,Object>> entities = new ConcurrentHashMap<>();
+    private Map<String,Map<String,Object>> agents = new ConcurrentHashMap<>();
 
     public void save(HasProperties obj) {
         // implement multiple dispatch
@@ -55,7 +55,7 @@ public class InMemoryDataStore implements DataStore {
             entity.setProperty(key, properties.get(key));
     }
 
-    public ArrayList<Integer> search(Map<String, String> query) {
+    public ArrayList<Integer> search(Map<String, Object> query) {
         var setQuery = query.entrySet();
         var results = new ArrayList<Integer>();
         for(var id : entities.keySet()) {

@@ -5,10 +5,10 @@ import java.util.Optional;
 
 /** interface for all game objects that can have properties associated with them */
 public interface HasProperties {
-    public Map<String,String> getProperties();
-    public void setProperty(String key, String value);
+    public Map<String,Object> getProperties();
+    public void setProperty(String key, Object value);
 
-    public default void setProperties(Map<String,String> properties) {
+    public default void setProperties(Map<String,Object> properties) {
         for(var entry : properties.entrySet())
             setProperty(entry.getKey(), entry.getValue());
     }
@@ -17,12 +17,37 @@ public interface HasProperties {
         return getProperties().containsKey(key);
     }
 
-    public default String getProperty(String key) {
+    public default Object getProperty(String key) {
         var m = getProperties();
         if(!m.containsKey(key))
             throw new IllegalArgumentException("no such property " +
-                key + " in " +this);
+                    key + " in " +this);
         return m.get(key);
+    }
+
+    public default String getString(String key) {
+        var m = getProperties();
+        if(!m.containsKey(key))
+            throw new IllegalArgumentException("no such property " +
+                    key + " in " +this);
+        if((m.get(key) instanceof String))
+            return (String)m.get(key);
+        return m.get(key)+"";
+    }
+
+    public default Integer getInteger(String key) {
+        var m = getProperties();
+        if(!m.containsKey(key))
+            throw new IllegalArgumentException("no such property " +
+                    key + " in " +this);
+        if((m.get(key) instanceof Integer))
+            return (Integer)m.get(key);
+
+        try{ return Integer.parseInt(m.get(key)+"");}
+        catch(NumberFormatException e) {
+            throw new IllegalArgumentException("property " +
+                    key + " does not have type Integer in " +this);
+        }
     }
 
     public Game getGame();
@@ -31,7 +56,7 @@ public interface HasProperties {
         var properties = getProperties();
         if(properties.containsKey(property)) {
             try {
-                var entity = getGame().getEntity(Integer.parseInt(getProperty(property)));
+                var entity = getGame().getEntity((Integer)getProperty(property));
                 return Optional.of(entity);
             } catch(Exception e) {
 
@@ -45,7 +70,7 @@ public interface HasProperties {
         var properties = getProperties();
         if(properties.containsKey(property)) {
             try {
-                var direction = Direction.valueOf(properties.get(property));
+                var direction = Direction.valueOf(properties.get(property).toString());
                 return Optional.of(direction);
             } catch(Exception e) {
 
@@ -60,11 +85,11 @@ public interface HasProperties {
         if(properties.containsKey(prefix+"board") &&
                 properties.containsKey(prefix+"row") &&
                 properties.containsKey(prefix + "column")) {
-            var board = getGame().getBoard(properties.get(prefix+"board"));
+            var board = getGame().getBoard(properties.get(prefix+"board").toString());
             if(board != null) {
                 try {
-                    var row = Integer.parseInt(properties.get(prefix+"row"));
-                    var column = Integer.parseInt(properties.get(prefix+"column"));
+                    var row = (Integer)properties.get(prefix+"row");
+                    var column = (Integer)(properties.get(prefix+"column"));
                     var tile = board.getTile(column, row);
                     if(tile != null) return Optional.of(tile);
                 } catch(NumberFormatException e) {

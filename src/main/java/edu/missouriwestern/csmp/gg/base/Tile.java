@@ -15,18 +15,18 @@ public class Tile implements Container, HasProperties {
 	final char character;
 	private Board board;
 	private final String type;
-	private final Map<String,String> properties;
+	private final Map<String,Object> properties;
 
 	public static Function2<Integer,Integer,Tile> getGenerator(char character,
 															   String type,
-															   Map<String,String> properties) {
+															   Map<String,Object> properties) {
 		return (col,row) -> new Tile(col, row, type, character, properties);
 	}
 
 	/**
 	 * Constructs a tile from a given {@link Board} at a given location with the given character representation
 	 * */
-	protected Tile(int column, int row, String type, char character, Map<String,String> properties) {
+	protected Tile(int column, int row, String type, char character, Map<String,Object> properties) {
 		this.row = row;
 		this.column = column;
 		this.type = type;
@@ -58,12 +58,12 @@ public class Tile implements Container, HasProperties {
 	public Board getBoard() { return board;}
 
 	@Override
-	public Map<String,String> getProperties() {
+	public Map<String,Object> getProperties() {
 		return properties;
 	}
 
 	@Override
-	public void setProperty(String key, String value) {
+	public void setProperty(String key, Object value) {
 		properties.put(key, value);
 		if(getGame() != null)
 			board.getGame().propagateEvent(tileStatusUpdateEvent());

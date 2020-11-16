@@ -126,7 +126,7 @@ class Neo4jDataStore implements DataStore {
     }
 
     @Override
-    public ArrayList<Integer> search(Map<String,String> map){
+    public ArrayList<Integer> search(Map<String,Object> map){
         ArrayList<Integer> list = new ArrayList<>();
         StatementResult statementResult = null;
         String properties = "";
