@@ -14,6 +14,11 @@
         <name>gg-game-api</name>
         <url>https://maven.pkg.github.com/mwsu-csmp/gg-game-api</url>
       </repository>
+      <repository>
+        <id>github</id>
+        <name>gg-pixi-client</name>
+        <url>https://maven.pkg.github.com/mwsu-csmp/gg-pixi-client</url>
+      </repository>       
     </distributionManagement>
  
     <build>
