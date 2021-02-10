@@ -9,17 +9,23 @@
     <version>0.3</version>
          
     <distributionManagement>
-      <repository>
-        <id>github</id>
-        <name>gg-game-api</name>
-        <url>https://maven.pkg.github.com/mwsu-csmp/gg-game-api</url>
-      </repository>
-      <repository>
-        <id>github</id>
-        <name>gg-pixi-client</name>
-        <url>https://maven.pkg.github.com/mwsu-csmp/gg-pixi-client</url>
-      </repository>       
+        <repository>
+          <id>github</id>
+          <name>GitHub mwsu-csmp Apache Maven Packages</name>
+          <url>https://maven.pkg.github.com/mwsu-csmp/gg-game-api</url>
+        </repository>   
     </distributionManagement>
+         
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub mwsu-csmp Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/mwsu-csmp/gg-pixi-client</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+    </repositories>
+             
  
     <build>
         <plugins>
