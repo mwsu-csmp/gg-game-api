@@ -6,7 +6,7 @@
 
     <groupId>edu.missouriwestern.csmp.gg</groupId>
     <artifactId>2dapi</artifactId>
-    <version>0.3</version>         
+    <version>0.4-SNAPSHOT</version>
  
     <build>
         <plugins>

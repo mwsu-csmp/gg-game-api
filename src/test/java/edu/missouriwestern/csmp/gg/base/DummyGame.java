@@ -17,7 +17,7 @@ public class DummyGame extends Game {
     }
 
     public DummyGame(Board board){
-        super(new InMemoryDataStore(),
+        super("game1", new InMemoryDataStore(),
                 event -> {},
                 event -> {},
                 new Map1(),
@@ -25,7 +25,7 @@ public class DummyGame extends Game {
     }
 
     public DummyGame() {
-        super(new InMemoryDataStore(),
+        super("game1", new InMemoryDataStore(),
                 event -> {},
                 event -> {},
                 new Map1());

@@ -1,6 +1,8 @@
 package edu.missouriwestern.csmp.gg.base;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +53,18 @@ public class Event implements HasProperties {
     @Override
     public void setProperty(String key, Object value) {
         throw new UnsupportedOperationException("Event properties are immutable");
+    }
+
+    public static Event fromJson(Game game, String json) {
+        Gson gson = new Gson();
+        var obj = gson.fromJson(json, JsonObject.class);
+        int id = obj.get("id").getAsInt();
+        String type = obj.get("type").getAsString();
+        var map = new HashMap<String,Object>();
+        if(obj.has("properties"))
+            for(String key : obj.get("properties").getAsJsonObject().keySet())
+                map.put(key, obj.get("properties").getAsJsonObject().get(key).toString());
+        return new Event(game, type, id, map);
     }
 
     /** time elapsed since start of game when this event occurred */

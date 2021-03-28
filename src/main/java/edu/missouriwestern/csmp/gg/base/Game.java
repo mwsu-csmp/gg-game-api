@@ -13,6 +13,7 @@ import java.util.stream.Stream;
  */
 public abstract class Game implements Container {
 
+	private final String id;
 	private final Map<String,Board> boards = new ConcurrentHashMap<>();
 	private final long startTime;    // time when game was started or restarted
 	private final long elapsedTime;  // time elapsed in game since start or last restart
@@ -30,10 +31,12 @@ public abstract class Game implements Container {
 	private final Multimap<Container, Entity> containerContents;
 	private final Map<Entity, Container> entityLocations;
 
-	public Game(DataStore dataStore,
+	public Game(String id,
+				DataStore dataStore,
 				EventListener eventPropagator,
 				Consumer<EventListener> incomingEventCallback,
 				Board ... boards) {
+		this.id = id;
 		this.dataStore = dataStore;
 		this.startTime = System.currentTimeMillis();
 		this.elapsedTime = 0;
@@ -54,6 +57,8 @@ public abstract class Game implements Container {
 
 		for(var board : boards) addBoard(board);
 	}
+
+	public String getId() { return this.id; }
 
 	@Override
 	public final Game getGame() { return this; }

@@ -15,7 +15,7 @@ public class TestGame extends Game {
     }
 
     public TestGame() {
-        super(new InMemoryDataStore(),
+        super("game1", new InMemoryDataStore(),
                 event -> {},
                 event -> {},
                 new TestMap1());
