@@ -1,8 +1,9 @@
-name: Maven Deploy
+name: Maven deploy package on release
 
 on:
-  push:
-    branches: [ master ]
+  release:
+    types:
+      - created
 
 jobs:
   create_settings_file:
