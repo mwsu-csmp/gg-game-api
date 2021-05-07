@@ -344,6 +344,8 @@ public abstract class Game implements Container {
 
 	public void propagateEvent(Event event) {
 		eventPropagator.acceptEvent(event);
+		for(var listener : listeners.keySet())
+			listener.accept(event);
 	}
 	public void propagateEvent(Event event, long delayTime) {
 		eventPropagator.acceptEvent(event, delayTime);
